@@ -5,7 +5,7 @@ namespace LinkedList.OneLink
 {
 	public class OneWayLinkList<T> : IEnumerable
 	{
-		
+
 
 		private Item<T> head = null;
 		private Item<T> tail = null;
@@ -103,11 +103,8 @@ namespace LinkedList.OneLink
 			if (IsEmpty || IsOneItem) return this;
 			if (Count == 2)
 			{
-				var buffer = head;
-				head = tail;
-				tail = buffer;
-				head.Next = tail;
-				tail.Next = null;
+				head = tail - !head;
+				tail = +head;
 				return this;
 			}
 
@@ -117,21 +114,16 @@ namespace LinkedList.OneLink
 				var item = (Item<T>)itemRef.Clone();
 				if (prevItem == null)//head
 				{
-					tail = prevItem = item;
-					tail.Next = null;
+					tail = prevItem = !item;
 					return false;
 				}
-				if (item.Next == null)//tail
+				if (+item == null)//tail
 				{
-					item.Next = prevItem;
-					head = item;
+					//prevItem - item 
+					head = item - prevItem;
 					return true;
 				}
-				item.Next = prevItem;
-
-
-
-				prevItem = item;
+				prevItem = item - prevItem;
 				return false;
 			});
 			return this;
@@ -148,15 +140,13 @@ namespace LinkedList.OneLink
 				if (item.Data.Equals(target))
 				{
 					var newItem = new Item<T>(data);
-					if (item.Next != null)//not Tail
+					if (+item != null)//not Tail
 					{
-						var next = item.Next;
-						item.Next = newItem;
-						newItem.Next = next;
+						_ = item + (newItem - +item);
 					}
 					else // Tail
 					{
-						tail = tail.Next = newItem;
+						tail += newItem;
 					}
 					Count++;
 					return true;
@@ -165,24 +155,24 @@ namespace LinkedList.OneLink
 			});
 			return this;
 		}
-		
+
 		public OneWayLinkList<T> RemoveElement(T data)
 		{
 			if (IsEmpty) return this;
 			if (IsOneItem) { RemoveAll(); return this; }
 			if (head.Data.Equals(data)) { RemoveFirst(); return this; }
-			BruteForce(itemRef =>
+			BruteForce(item =>
 			{
-				if (itemRef.Next.Data.Equals(data))
+				var possibleTarget = +item;
+				if (possibleTarget.Data.Equals(data))
 				{
-					if (itemRef.Next.Next != null)
+					if (+possibleTarget != null)
 					{
-						itemRef.Next = itemRef.Next.Next;						
+						_ = item + +possibleTarget;
 					}
 					else
 					{
-						itemRef.Next = null;
-						tail = itemRef;
+						tail = !item;
 					}
 					Count--;
 					return true;
@@ -225,6 +215,7 @@ namespace LinkedList.OneLink
 		/// <returns></returns>
 		public static Item<T> operator +(Item<T> left, Item<T> right)
 		{
+			if (left == null) throw new ArgumentNullException();
 			left.Next = right;
 			return right;
 		}
@@ -236,6 +227,7 @@ namespace LinkedList.OneLink
 		/// <returns></returns>
 		public static Item<T> operator -(Item<T> left, Item<T> right)
 		{
+			if (left == null) throw new ArgumentNullException();
 			left.Next = right;
 			return left;
 		}
@@ -246,7 +238,20 @@ namespace LinkedList.OneLink
 		/// <returns></returns>
 		public static Item<T> operator +(Item<T> item)
 		{
+			if (item == null) throw new ArgumentNullException();
+
 			return item.Next;
+		}
+		/// <summary>
+		/// удаляет Next, возвращая себя
+		/// </summary>
+		/// <param name="item"></param>
+		/// <returns></returns>
+		public static Item<T> operator !(Item<T> item)
+		{
+			if (item == null) throw new ArgumentNullException();
+			item.Next = null;
+			return item;
 		}
 	}
 }

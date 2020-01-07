@@ -78,9 +78,7 @@ namespace LinkedList.ReversibleLink
 			}
 			else
 			{
-				item.Prev = tail;
-				tail.Next = item;
-				tail = item;
+				tail += item;
 			}
 			Count++;
 			return this;
@@ -94,9 +92,7 @@ namespace LinkedList.ReversibleLink
 			}
 			else
 			{
-				head.Prev = item;
-				item.Next = head;
-				head = item;
+				head = item - head;
 			}
 			Count++;
 			return this;
@@ -105,8 +101,7 @@ namespace LinkedList.ReversibleLink
 		{
 			if (!IsEmpty)
 			{
-				head = head.Next;
-				head.Prev = null;
+				head = ~+head;
 				Count--;
 			}
 			return this;
@@ -115,8 +110,7 @@ namespace LinkedList.ReversibleLink
 		{
 			if (!IsEmpty)
 			{
-				tail = tail.Prev;
-				tail.Next = null;
+				tail = !-tail;
 				Count--;
 			}
 			return this;
@@ -127,11 +121,8 @@ namespace LinkedList.ReversibleLink
 			if (IsEmpty || IsOneItem) return this;
 			if (Count == 2)
 			{
-				var buffer = head;
-				head = tail;
-				tail = buffer;
-				head.Next = tail;
-				tail.Next = null;
+				head = ~tail - !head;
+				tail = +head;
 				return this;
 			}
 
@@ -141,20 +132,16 @@ namespace LinkedList.ReversibleLink
 				var item = (Item<T>)itemRef.Clone();
 				if (prevItem == null)//head
 				{
-					tail = prevItem = item;
-					tail.Next = null;
+					tail = prevItem = !item;
 					return false;
 				}
 
-				if (item.Next == null)//tail
+				if (+item == null)//tail
 				{
-					item.Next = prevItem;
-					head = item;
+					head = item - prevItem;
 					return true;
 				}
-
-				item.Next = prevItem;
-				prevItem = item;
+				prevItem = item - prevItem;
 
 				return false;
 			});
@@ -174,17 +161,11 @@ namespace LinkedList.ReversibleLink
 					var newItem = new Item<T>(data);
 					if (item.Next != null)//not Tail
 					{
-						var next = item.Next;
-						item.Next = newItem;
-						newItem.Next = next;
-						newItem.Prev = item;
-						next.Prev = newItem;
+						_ = item + (newItem - +item);
 					}
 					else // Tail
 					{
-						newItem.Prev = tail;
-						tail.Next = newItem;
-						tail = newItem;
+						tail += newItem;
 					}
 					Count++;
 					return true;
@@ -209,19 +190,13 @@ namespace LinkedList.ReversibleLink
 				if (item.Data.Equals(target))
 				{
 					var newItem = new Item<T>(data);
-					if (item.Prev != null)//not Tail
+					if (-item != null)//not Tail
 					{
-						var prev = item.Prev;
-						item.Prev = newItem;
-						newItem.Prev = prev;
-						newItem.Next = item;
-						prev.Next = newItem;
+						_ = -item + newItem + item;
 					}
 					else // Tail
 					{
-						head.Prev = newItem;
-						newItem.Next = head;
-						head = newItem;
+						head = newItem - head;
 					}
 					Count++;
 					return true;
@@ -241,11 +216,7 @@ namespace LinkedList.ReversibleLink
 			{
 				if (itemRef.Data.Equals(data))
 				{
-					var prevItem = itemRef.Prev;
-					var nextItem = itemRef.Next;
-
-					prevItem.Next = nextItem;
-					nextItem.Prev = prevItem;
+					_ = -itemRef + +itemRef;
 
 					Count--;
 					return true;
@@ -274,13 +245,85 @@ namespace LinkedList.ReversibleLink
 	internal class Item<T> : ICloneable
 	{
 		public Item(T data) => Data = data;
-
 		public Item<T> Prev { get; set; }
 		public Item<T> Next { get; set; }
 		public T Data { get; set; }
 		public object Clone()
 		{
 			return MemberwiseClone();
+		}
+
+		/// <summary>
+		/// привязывает левый к правому и возвращает правый
+		/// </summary>
+		/// <param name="left"></param>
+		/// <param name="right"></param>
+		/// <returns></returns>
+		public static Item<T> operator +(Item<T> left, Item<T> right)
+		{
+			if (left == null) throw new ArgumentNullException();
+			if (right == null) throw new ArgumentNullException();
+			left.Next = right;
+			right.Prev = left;
+			return right;
+		}
+		/// <summary>
+		/// привязывает левый к правому и возвращает левый
+		/// </summary>
+		/// <param name="left"></param>
+		/// <param name="right"></param>
+		/// <returns></returns>
+		public static Item<T> operator -(Item<T> left, Item<T> right)
+		{
+			if (left == null) throw new ArgumentNullException();
+			if (right == null) throw new ArgumentNullException();
+			left.Next = right;
+			right.Prev = left;
+			return left;
+		}
+		/// <summary>
+		/// возвращает Next
+		/// </summary>
+		/// <param name="item"></param>
+		/// <returns></returns>
+		public static Item<T> operator +(Item<T> item)
+		{
+			if (item == null) throw new ArgumentNullException();
+
+			return item.Next;
+		}
+		/// <summary>
+		/// возвращает Prev
+		/// </summary>
+		/// <param name="item"></param>
+		/// <returns></returns>
+		public static Item<T> operator -(Item<T> item)
+		{
+			if (item == null) throw new ArgumentNullException();
+
+			return item.Prev;
+		}
+		/// <summary>
+		/// удаляет Next, возвращая себя
+		/// </summary>
+		/// <param name="item"></param>
+		/// <returns></returns>
+		public static Item<T> operator !(Item<T> item)
+		{
+			if (item == null) throw new ArgumentNullException();
+			item.Next = null;
+			return item;
+		}
+		/// <summary>
+		/// удаляет Prev, возвращая себя
+		/// </summary>
+		/// <param name="item"></param>
+		/// <returns></returns>
+		public static Item<T> operator ~(Item<T> item)
+		{
+			if (item == null) throw new ArgumentNullException();
+			item.Prev = null;
+			return item;
 		}
 	}
 }

@@ -1,26 +1,27 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using LinkedList.OneLink;
+using LinkedList.ReversibleLink;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LinkedList.OneLink.Tests
+namespace LinkedList.ReversibleLink.Tests
 {
 	[TestClass()]
-	public class OneWayLinkListTests
+	public class TwoWayLinkListTests
 	{
-		private OneWayLinkList<int> GetList() => new OneWayLinkList<int>();
-		private OneWayLinkList<int> GetFullList()
+		private TwoWayLinkList<int> GetList() => new TwoWayLinkList<int>();
+		private TwoWayLinkList<int> GetFullList()
 		{
-			var list = new OneWayLinkList<int>(-1);
+			var list = new TwoWayLinkList<int>(-1);
 			for (int i = 0; i < 5; i++)
 			{
 				list.Add(i);
 			}
 			return list;
 		}
+
 
 
 		[TestMethod()]
@@ -54,6 +55,18 @@ namespace LinkedList.OneLink.Tests
 		}
 
 		[TestMethod()]
+		public void RemoveLastTest()
+		{
+			var list = GetFullList();
+			//-1,0,1,2,3,4
+			//-1,0,1,2
+			list.RemoveLast().RemoveLast();
+			var arr = list.ToArray();
+			Assert.AreEqual(2, arr[3]);
+			Assert.AreEqual(4, arr.Length);
+		}
+
+		[TestMethod()]
 		public void ReversTest()
 		{
 			var list = GetFullList();
@@ -72,7 +85,7 @@ namespace LinkedList.OneLink.Tests
 			Assert.AreEqual(0, arr[4]);
 			Assert.AreEqual(-1, arr[5]);
 
-			
+
 			Assert.AreEqual(2, arr2[0]);
 			Assert.AreEqual(1, arr2[1]);
 
@@ -82,12 +95,24 @@ namespace LinkedList.OneLink.Tests
 		public void AddAfterTest()
 		{
 			var list = GetFullList();
-			//-1,0,100,1,2,103,3,4,105
+			//-1,100,0,1,2,103,3,4,105
 			list.AddAfter(-1, 100).AddAfter(2, 103).AddAfter(4, 105);
 			var arr = list.ToArray();
 			Assert.AreEqual(100, arr[1]);
 			Assert.AreEqual(103, arr[5]);
 			Assert.AreEqual(105, arr[8]);
+		}
+
+		[TestMethod()]
+		public void AddBeforeTest()
+		{
+			var list = GetFullList();
+			//100,-1,0,1,103,2,3,105,4
+			list.AddBefore(-1, 100).AddBefore(2, 103).AddBefore(4, 105);
+			var arr = list.ToArray();
+			Assert.AreEqual(100, arr[0]);
+			Assert.AreEqual(103, arr[4]);
+			Assert.AreEqual(105, arr[7]);
 		}
 
 		[TestMethod()]
@@ -111,5 +136,6 @@ namespace LinkedList.OneLink.Tests
 			Assert.IsTrue(list.IsEmpty);
 		}
 
+		
 	}
 }
