@@ -139,6 +139,19 @@ namespace LinkedList.StackLink
 
 		#endregion
 
+		public T[] ToArray()
+		{
+			var array = new T[Count];
+			var iter = Count - 1;
+			var current = First;
+			while (+current != null)
+			{
+				array[iter--] = current.Data;
+				current = +current;
+			}
+			return array;
+		}
+
 		/// <summary>
 		/// добавляет элемент в стек
 		/// </summary>

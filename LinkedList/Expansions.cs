@@ -1,5 +1,6 @@
 ﻿using LinkedList.OneLink;
 using LinkedList.ReversibleLink;
+using LinkedList.StackLink;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +26,15 @@ namespace LinkedList
 			foreach (var item in array)
 			{
 				list.Add(item);
+			}
+			return list;
+		}
+		public static StackLinkList<T> ToStackLinkList<T>(this T[] array)
+		{
+			var list = new StackLinkList<T>();
+			foreach (var item in array)
+			{
+				list += item;
 			}
 			return list;
 		}
