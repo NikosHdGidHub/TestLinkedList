@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace LinkedList.StackLink
 {
+	[Serializable]
 	public class StackLinkList<T>
 	{
 		private Item<T> First = null;
@@ -138,7 +139,51 @@ namespace LinkedList.StackLink
 
 		#endregion
 
+		/// <summary>
+		/// добавляет элемент в стек
+		/// </summary>
+		/// <param name="left">стек</param>
+		/// <param name="right"> элемент</param>
+		/// <returns>стек</returns>
+		public static StackLinkList<T> operator +(StackLinkList<T> left, T right) 
+		{
+			if (left == null) throw new ArgumentNullException();
+			left.Push(right);
+			return left;
+		}
+		/// <summary>
+		/// добавляет массив элементов в стек
+		/// </summary>
+		/// <param name="left">стек</param>
+		/// <param name="right">массив элементов</param>
+		/// <returns>стек</returns>
+		public static StackLinkList<T> operator +(StackLinkList<T> left, T[] right)
+		{
+			if (left == null) throw new ArgumentNullException();
+			left.Push(right);
+			return left;
+		}
+		/// <summary>
+		/// Убирает (Pop) из стека n элементов
+		/// </summary>
+		/// <param name="stack">stack</param>
+		/// <param name="count">n</param>
+		/// <returns>IEnumerable</returns>
+		public static IEnumerable<T> operator -(StackLinkList<T> stack, int count)
+		{
+			return stack.Pop(count);
+		}
+		/// <summary>
+		/// Убирает (Pop) все элементы из стека
+		/// </summary>
+		/// <param name="stack"></param>
+		/// <returns>IEnumerable</returns>
+		public static IEnumerable<T> operator !(StackLinkList<T> stack)
+		{
+			return stack.PopAll();
+		}
 	}
+	[Serializable]
 	public class Item<T>
 	{
 		public T Data { get; set; }
