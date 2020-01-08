@@ -1,34 +1,64 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace LinkedList.ReversibleLink
 {
 	public class TwoWayLinkList<T> : IEnumerable
 	{
+		#region StackFunc
+		private Action actionStack = null;
+		private void InvokeActionStack()
+		{
+			actionStack();
+		}
+		/// <summary>
+		/// !item
+		/// </summary>
+		/// <param name="item"></param>
+		private void SleepNullNext(Item<T> item)
+		{
+			actionStack += () => _ = !item;
+		}
+		/// <summary>
+		/// leftItem - rightItem
+		/// </summary>
+		/// <param name="left"></param>
+		/// <param name="right"></param>
+		private void SleepMinusItem(Item<T> left, Item<T> right)
+		{
+			actionStack += () => _ = left - right;
+		}
+		#endregion
+
 		private Item<T> head = null;
 		private Item<T> tail = null;
 		private Item<T> New(T data) => new Item<T>(data);
 
-
-		private void BruteForceNext(Predicate<Item<T>> action)
+		private IEnumerable<Item<T>> Items
 		{
-			var current = head;
-			while (current != null)
+			get
 			{
-				if (action(current)) break;
-				current = current.Next;
+				var current = head;
+				while (current != null)
+				{
+					yield return current;
+					current = current.Next;
+				}
 			}
 		}
-		private void BruteForcePrev(Predicate<Item<T>> action)
+		private IEnumerable<Item<T>> ItemsPrev
 		{
-			var current = tail;
-			while (current != null)
+			get
 			{
-				if (action(current)) break;
-				current = current.Prev;
+				var current = head;
+				while (current != null)
+				{
+					yield return current;
+					current = current.Next;
+				}
 			}
 		}
-
 
 		public TwoWayLinkList() : base() { }
 		public TwoWayLinkList(T data) => Add(data);
@@ -36,11 +66,10 @@ namespace LinkedList.ReversibleLink
 		{
 			var array = new T[Count];
 			var iter = 0;
-			BruteForceNext(item =>
+			foreach (var item in Items)
 			{
 				array[iter++] = item.Data;
-				return false;
-			});
+			}
 			return array;
 		}
 
@@ -119,6 +148,7 @@ namespace LinkedList.ReversibleLink
 		public TwoWayLinkList<T> Revers()
 		{
 			if (IsEmpty || IsOneItem) return this;
+
 			if (Count == 2)
 			{
 				head = ~tail - !head;
@@ -127,24 +157,26 @@ namespace LinkedList.ReversibleLink
 			}
 
 			Item<T> prevItem = null;
-			BruteForceNext(itemRef =>
+
+			foreach (var item in Items)
 			{
-				var item = (Item<T>)itemRef.Clone();
 				if (prevItem == null)//head
 				{
-					tail = prevItem = !item;
-					return false;
+					SleepNullNext(item);
+					tail = prevItem = item;
+					continue;
 				}
 
 				if (+item == null)//tail
 				{
-					head = item - prevItem;
-					return true;
+					SleepMinusItem(item, prevItem);
+					head = item;
+					continue;
 				}
-				prevItem = item - prevItem;
-
-				return false;
-			});
+				SleepMinusItem(item, prevItem);
+				prevItem = item;
+			}
+			InvokeActionStack();
 			return this;
 		}
 		public TwoWayLinkList<T> AddAfter(T target, T data)
@@ -154,7 +186,8 @@ namespace LinkedList.ReversibleLink
 				Add(data);
 				return this;
 			}
-			BruteForceNext(item =>
+			
+			foreach (var item in Items)
 			{
 				if (item.Data.Equals(target))
 				{
@@ -168,10 +201,10 @@ namespace LinkedList.ReversibleLink
 						tail += newItem;
 					}
 					Count++;
-					return true;
+					break;
 				}
-				return false;
-			});
+			}
+			
 			return this;
 		}
 		public TwoWayLinkList<T> AddBefore(T target, T data)
@@ -185,7 +218,7 @@ namespace LinkedList.ReversibleLink
 			{
 				AddPrev(data); return this;
 			}
-			BruteForcePrev(item =>
+			foreach (var item in ItemsPrev)
 			{
 				if (item.Data.Equals(target))
 				{
@@ -199,10 +232,9 @@ namespace LinkedList.ReversibleLink
 						head = newItem - head;
 					}
 					Count++;
-					return true;
+					break;
 				}
-				return false;
-			});
+			}
 			return this;
 		}
 
@@ -212,17 +244,17 @@ namespace LinkedList.ReversibleLink
 			if (IsOneItem) { RemoveAll(); return this; }
 			if (head.Data.Equals(data)) { RemoveFirst(); return this; }
 			if (tail.Data.Equals(data)) { RemoveLast(); return this; }
-			BruteForceNext(itemRef =>
+			foreach (var item in Items)
 			{
-				if (itemRef.Data.Equals(data))
+				if (item.Data.Equals(data))
 				{
-					_ = -itemRef + +itemRef;
+					_ = -item + +item;
 
 					Count--;
-					return true;
+					break;
 				}
-				return false;
-			});
+			}
+
 			return this;
 		}
 		public void RemoveAll()
@@ -241,17 +273,16 @@ namespace LinkedList.ReversibleLink
 				current = current.Next;
 			}
 		}
+
+
 	}
-	internal class Item<T> : ICloneable
+	internal class Item<T>
 	{
 		public Item(T data) => Data = data;
 		public Item<T> Prev { get; set; }
 		public Item<T> Next { get; set; }
 		public T Data { get; set; }
-		public object Clone()
-		{
-			return MemberwiseClone();
-		}
+		
 
 		/// <summary>
 		/// привязывает левый к правому и возвращает правый

@@ -72,7 +72,7 @@ namespace LinkedList.OneLink.Tests
 			Assert.AreEqual(0, arr[4]);
 			Assert.AreEqual(-1, arr[5]);
 
-			
+
 			Assert.AreEqual(2, arr2[0]);
 			Assert.AreEqual(1, arr2[1]);
 
@@ -111,5 +111,20 @@ namespace LinkedList.OneLink.Tests
 			Assert.IsTrue(list.IsEmpty);
 		}
 
+		[TestMethod()]
+		public void SortTest()
+		{
+			var listRand = GetList();
+			//-1 до 4
+			listRand.Add(2).Add(4).Add(-1).Add(1).Add(3).Add(0);
+			listRand.Sort(data=> data);
+			var list = GetFullList();
+			var arrRand = listRand.ToArray();
+			var arr = list.ToArray();
+			for (int i = 0; i < arr.Length; i++)
+			{
+				//Assert.AreEqual(arr[i], arrRand[i]);
+			}
+		}
 	}
 }

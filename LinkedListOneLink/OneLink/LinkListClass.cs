@@ -1,23 +1,50 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace LinkedList.OneLink
 {
 	public class OneWayLinkList<T> : IEnumerable
 	{
-
+		#region StackFunc
+		private Action actionStack = null;
+		private void InvokeActionStack()
+		{
+			actionStack();
+		}
+		/// <summary>
+		/// !item
+		/// </summary>
+		/// <param name="item"></param>
+		private void SleepNullNext(Item<T> item)
+		{
+			actionStack += () => _ = !item;
+		}
+		/// <summary>
+		/// leftItem - rightItem
+		/// </summary>
+		/// <param name="left"></param>
+		/// <param name="right"></param>
+		private void SleepMinusItem(Item<T> left, Item<T> right)
+		{
+			actionStack += () => _ = left - right;
+		}
+		#endregion
 
 		private Item<T> head = null;
 		private Item<T> tail = null;
 
 		private Item<T> New(T data) => new Item<T>(data);
-		private void BruteForce(Predicate<Item<T>> action)
+		private IEnumerable<Item<T>> Items
 		{
-			var current = head;
-			while (current != null)
+			get
 			{
-				if (action(current)) break;
-				current = current.Next;
+				var current = head;
+				while (current != null)
+				{
+					yield return current;
+					current = current.Next;
+				}
 			}
 		}
 
@@ -29,11 +56,10 @@ namespace LinkedList.OneLink
 		{
 			var array = new T[Count];
 			var iter = 0;
-			BruteForce(item =>
+			foreach (var item in Items)
 			{
 				array[iter++] = item.Data;
-				return false;
-			});
+			}
 			return array;
 		}
 		public bool IsEmpty
@@ -59,6 +85,12 @@ namespace LinkedList.OneLink
 			}
 		}
 		public int Count { get; private set; } = 0;
+
+		public OneWayLinkList<T> Sort<Tkey>(Func<T, Tkey> compare)
+		{
+
+			return null;
+		}
 
 		public OneWayLinkList<T> Add(T data)
 		{
@@ -109,23 +141,28 @@ namespace LinkedList.OneLink
 			}
 
 			Item<T> prevItem = null;
-			BruteForce(itemRef =>
+			foreach (var item in Items)
 			{
-				var item = (Item<T>)itemRef.Clone();
 				if (prevItem == null)//head
 				{
-					tail = prevItem = !item;
-					return false;
+					//!item
+					SleepNullNext(item);
+					tail = prevItem = item;
+					continue;
 				}
 				if (+item == null)//tail
 				{
-					//prevItem - item 
-					head = item - prevItem;
-					return true;
+					//item - prevItem
+					SleepMinusItem(item, prevItem);
+					head = item;
+					continue;
 				}
-				prevItem = item - prevItem;
-				return false;
-			});
+				//item - prevItem
+				SleepMinusItem(item, prevItem);
+
+				prevItem = item;
+			}
+			InvokeActionStack();
 			return this;
 		}
 		public OneWayLinkList<T> AddAfter(T target, T data)
@@ -135,7 +172,7 @@ namespace LinkedList.OneLink
 				Add(data);
 				return this;
 			}
-			BruteForce(item =>
+			foreach (var item in Items)
 			{
 				if (item.Data.Equals(target))
 				{
@@ -149,10 +186,9 @@ namespace LinkedList.OneLink
 						tail += newItem;
 					}
 					Count++;
-					return true;
+					break;
 				}
-				return false;
-			});
+			}
 			return this;
 		}
 
@@ -161,7 +197,7 @@ namespace LinkedList.OneLink
 			if (IsEmpty) return this;
 			if (IsOneItem) { RemoveAll(); return this; }
 			if (head.Data.Equals(data)) { RemoveFirst(); return this; }
-			BruteForce(item =>
+			foreach (var item in Items)
 			{
 				var possibleTarget = +item;
 				if (possibleTarget.Data.Equals(data))
@@ -175,10 +211,9 @@ namespace LinkedList.OneLink
 						tail = !item;
 					}
 					Count--;
-					return true;
+					break;
 				}
-				return false;
-			});
+			}
 			return this;
 		}
 		public void RemoveAll()
@@ -196,17 +231,16 @@ namespace LinkedList.OneLink
 				current = current.Next;
 			}
 		}
+
+
 	}
-	internal class Item<T> : ICloneable
+	internal class Item<T>
 	{
 		public T Data { get; set; }
 		public Item(T data) => Data = data;
 		public Item<T> Next { get; set; }
 
-		public object Clone()
-		{
-			return MemberwiseClone();
-		}
+		
 		/// <summary>
 		/// привязывает левый к правому и возвращает правый
 		/// </summary>
