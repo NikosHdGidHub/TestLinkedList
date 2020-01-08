@@ -51,10 +51,17 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="ArrayList\SimpleArrayListTests.cs" />
     <Compile Include="OneLink\OneWayLinkListTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReversibleLink\TwoWayLinkListTests.cs" />
     <Compile Include="StackLinkList\StackLinkListClassTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LinkedList\LinkedList.csproj">
+      <Project>{5DD33F70-1988-4FF6-BE99-695502B851FD}</Project>
+      <Name>LinkedList</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
