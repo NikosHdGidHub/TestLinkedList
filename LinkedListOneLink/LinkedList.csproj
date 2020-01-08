@@ -45,6 +45,7 @@
     <Compile Include="ReversibleLink\ReversibleLinkListClass.cs" />
     <Compile Include="OneLink\LinkListClass.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StackLinkList\StackLinkListClass.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

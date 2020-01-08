@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace LinkedList.OneLink
 {
-	public class OneWayLinkList<T> : IEnumerable
+	public class OneWayLinkList<T> 
 	{
 		#region StackFunc
 		private Action actionStack = null;
@@ -31,15 +31,13 @@ namespace LinkedList.OneLink
 		}
 		#endregion
 
-		private Item<T> head = null;
-		private Item<T> tail = null;
 
 		private Item<T> New(T data) => new Item<T>(data);
 		private IEnumerable<Item<T>> Items
 		{
 			get
 			{
-				var current = head;
+				var current = First;
 				while (current != null)
 				{
 					yield return current;
@@ -52,6 +50,12 @@ namespace LinkedList.OneLink
 		public OneWayLinkList(T data) => Add(data);
 		public OneWayLinkList() { }
 
+		#region Публичные методы и свойства
+
+		/// <summary>
+		/// Преобразовать в массив.
+		/// </summary>
+		/// <returns></returns>
 		public T[] ToArray()
 		{
 			var array = new T[Count];
@@ -62,81 +66,116 @@ namespace LinkedList.OneLink
 			}
 			return array;
 		}
+		/// <summary>
+		/// Пустой список.
+		/// </summary>
 		public bool IsEmpty
 		{
 			get
 			{
-				if (head == null && tail == null && Count == 0)
+				if (First == null && Last == null && Count == 0)
 					return true;
-				if (head != null && tail != null && Count > 0)
+				if (First != null && Last != null && Count > 0)
 					return false;
 				throw new MemberAccessException();
 			}
 		}
+		/// <summary>
+		/// Правда - содержит один элемент
+		/// </summary>
 		public bool IsOneItem
 		{
 			get
 			{
-				if (head == tail && Count == 1)
+				if (First == Last && Count == 1)
 					return true;
 				if (IsEmpty)
 					return false;
 				return false;
 			}
 		}
+		/// <summary>
+		/// Количество элементов
+		/// </summary>
 		public int Count { get; private set; } = 0;
+		/// <summary>
+		/// Первый
+		/// </summary>
+		public Item<T> First { get; private set; } = null;
+		/// <summary>
+		/// Последний
+		/// </summary>
+		public Item<T> Last { get; private set; } = null;
+
 
 		public OneWayLinkList<T> Sort<Tkey>(Func<T, Tkey> compare)
 		{
 
 			return null;
 		}
-
+		/// <summary>
+		/// Добавить в конец.
+		/// </summary>
+		/// <param name="data"></param>
+		/// <returns></returns>
 		public OneWayLinkList<T> Add(T data)
 		{
 			var item = New(data);
 
 			if (IsEmpty)
 			{
-				head = tail = item;
+				First = Last = item;
 			}
 			else
 			{
-				tail += item;
+				Last += item;
 			}
 			Count++;
 			return this;
 		}
+		/// <summary>
+		/// Добавить перед первым.
+		/// </summary>
+		/// <param name="data"></param>
+		/// <returns></returns>
 		public OneWayLinkList<T> AddPrev(T data)
 		{
 			var item = New(data);
 			if (IsEmpty)
 			{
-				head = tail = item;
+				First = Last = item;
 			}
 			else
 			{
-				head = item - head;
+				First = item - First;
 			}
 			Count++;
 			return this;
 		}
+		/// <summary>
+		/// Удалить первый.
+		/// </summary>
+		/// <returns></returns>
 		public OneWayLinkList<T> RemoveFirst()
 		{
 			if (!IsEmpty)
 			{
-				head = +head;
+				First = +First;
 				Count--;
 			}
 			return this;
 		}
+		/// <summary>
+		/// Развернуть лист
+		/// </summary>
+		/// <returns></returns>
 		public OneWayLinkList<T> Revers()
 		{
 			if (IsEmpty || IsOneItem) return this;
 			if (Count == 2)
 			{
-				head = tail - !head;
-				tail = +head;
+				First = Last - !First;
+				Last = +First;
 				return this;
 			}
 
@@ -147,14 +186,14 @@ namespace LinkedList.OneLink
 				{
 					//!item
 					SleepNullNext(item);
-					tail = prevItem = item;
+					Last = prevItem = item;
 					continue;
 				}
 				if (+item == null)//tail
 				{
 					//item - prevItem
 					SleepMinusItem(item, prevItem);
-					head = item;
+					First = item;
 					continue;
 				}
 				//item - prevItem
@@ -165,6 +204,12 @@ namespace LinkedList.OneLink
 			InvokeActionStack();
 			return this;
 		}
+		/// <summary>
+		/// Добавить после
+		/// </summary>
+		/// <param name="target">Цель.</param>
+		/// <param name="data"></param>
+		/// <returns></returns>
 		public OneWayLinkList<T> AddAfter(T target, T data)
 		{
 			if (IsEmpty || IsOneItem)
@@ -183,7 +228,7 @@ namespace LinkedList.OneLink
 					}
 					else // Tail
 					{
-						tail += newItem;
+						Last += newItem;
 					}
 					Count++;
 					break;
@@ -191,12 +236,16 @@ namespace LinkedList.OneLink
 			}
 			return this;
 		}
-
+		/// <summary>
+		/// Удалить первое вхождение
+		/// </summary>
+		/// <param name="data"></param>
+		/// <returns></returns>
 		public OneWayLinkList<T> RemoveElement(T data)
 		{
 			if (IsEmpty) return this;
 			if (IsOneItem) { RemoveAll(); return this; }
-			if (head.Data.Equals(data)) { RemoveFirst(); return this; }
+			if (First.Data.Equals(data)) { RemoveFirst(); return this; }
 			foreach (var item in Items)
 			{
 				var possibleTarget = +item;
@@ -208,7 +257,7 @@ namespace LinkedList.OneLink
 					}
 					else
 					{
-						tail = !item;
+						Last = !item;
 					}
 					Count--;
 					break;
@@ -216,15 +265,23 @@ namespace LinkedList.OneLink
 			}
 			return this;
 		}
+		/// <summary>
+		/// Удалить все
+		/// </summary>
 		public void RemoveAll()
 		{
-			head = null;
-			tail = null;
+			First = null;
+			Last = null;
 			Count = 0;
 		}
-		public IEnumerator GetEnumerator()
+		
+		/// <summary>
+		/// Перебор всех данных
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerator<T> GetEnumerator()
 		{
-			var current = head;
+			var current = First;
 			while (current != null)
 			{
 				yield return current.Data;
@@ -232,9 +289,10 @@ namespace LinkedList.OneLink
 			}
 		}
 
+		#endregion
 
 	}
-	internal class Item<T>
+	public class Item<T>
 	{
 		public T Data { get; set; }
 		public Item(T data) => Data = data;

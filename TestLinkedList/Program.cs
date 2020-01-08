@@ -1,4 +1,6 @@
 ﻿using LinkedList.OneLink;
+using LinkedList.ReversibleLink;
+using LinkedList.StackLink;
 using System;
 
 namespace TestLinkedList
@@ -9,42 +11,15 @@ namespace TestLinkedList
 		{
 			Console.WriteLine("Hello");
 
-			Console.WriteLine("OneList");
-			var list1 = new OneWayLinkList<int>();
-
-			for (int i = 0; i < 10; i++)
+			var list = new StackLinkList<int>(new[] { 1, 2, 3, 4, 5 });
+			foreach (var item in list.Pop(3))
 			{
-				list1.Add(i);
-			}
-			list1.AddPrev(-1);
-			list1.AddAfter(9, 10).AddAfter(0, -99).Add(11)//.AddBefore(0,-100).AddBefore(11,12).AddPrev(90).Add(111);
-			; Console.WriteLine();
-			foreach (var item in list1)
-			{
-
 				Console.WriteLine(item);
 			}
-
-			var user = new User();
-
-			Console.WriteLine("Проверка стека");
-			Console.WriteLine("Money: " + user.Money);
-			Console.WriteLine("Положите деньги");
-			var money = int.Parse(Console.ReadLine());
-			Put(user, money);
-			Console.WriteLine();
-			Console.WriteLine("Money: " + user.Money);
-			Console.WriteLine("Положите деньги");
-			money = int.Parse(Console.ReadLine());
-			Put(user, money);
-			Console.WriteLine();
-			Console.WriteLine("Money: " + user.Money);
-			Console.WriteLine("Положите деньги");
-			money = int.Parse(Console.ReadLine());
-			Put(user, money);
-			Console.WriteLine();
-			user.Invoke();
-			Console.WriteLine("Result: " + user.Money);
+			foreach (var item in list.PopAll())
+			{
+				Console.WriteLine(item);
+			}
 
 
 			Console.ReadLine();
