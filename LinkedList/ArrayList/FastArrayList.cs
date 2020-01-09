@@ -43,6 +43,14 @@ namespace LinkedList.ArrayList
 		/// Length - 1
 		/// </summary>
 		private int MaxIndex => Size - 1;
+		private bool IsValidIndex(int index)
+		{
+			if (index >= 0 && index < Count)
+			{
+				return true;
+			}
+			return false;
+		}
 		private void TailNext()
 		{
 			if (IsEmpty) throw new ArithmeticException("Массив не должен быть пустым, выполняя этот метод");
@@ -140,15 +148,16 @@ namespace LinkedList.ArrayList
 				FormatingRoadArray(i);
 			}
 			array = newArray;
+			IsFormated = true;
+			headIndex = 0;
+			tailIndex = Count - 1;
 		}
 
 		private int MathIndex(int index)
 		{
-			if (index < 0 || index > MaxIndex)
-				throw new IndexOutOfRangeException();
 			var result = index + headIndex;
 			if (result > MaxIndex)
-				result -= MaxIndex;
+				result -= Size;
 			return result;
 		}
 		private int FindIndex(int index)
@@ -163,7 +172,7 @@ namespace LinkedList.ArrayList
 
 		private void CutRoad(int indexRoad)
 		{
-			if (indexRoad == headIndex || indexRoad == tailIndex || indexRoad > MaxIndex || indexRoad < 0)
+			if (indexRoad == headIndex || indexRoad == tailIndex)
 				throw new ArithmeticException();
 
 			pathes.Cut(indexRoad);
@@ -231,14 +240,15 @@ namespace LinkedList.ArrayList
 		public int Size => array?.Length ?? 0;
 		public bool IsEmpty
 		{
-			get
-			{
-				if (headIndex == -1 && tailIndex == -1 && Count == 0)
-					return true;
-				if (headIndex > -1 && tailIndex > -1 && Count > 0)
-					return false;
-				throw new MemberAccessException();
-			}
+			get => Count == 0;
+			//{
+
+			//	//if (headIndex == -1 && tailIndex == -1 && Count == 0)
+			//	//	return true;
+			//	//if (headIndex > -1 && tailIndex > -1 && Count > 0)
+			//	//	return false;
+			//	//throw new MemberAccessException();
+			//}
 		}
 		public bool IsAvailableWrite
 		{
@@ -249,6 +259,7 @@ namespace LinkedList.ArrayList
 				return false;
 			}
 		}
+
 
 		public FastArrayList(int size)
 		{
@@ -269,7 +280,9 @@ namespace LinkedList.ArrayList
 				SetStartOprions(data); return;
 			}
 
-			TailNext();
+			//TailNext();
+			tailIndex = pathes[tailIndex].Next;
+
 			array[tailIndex] = data;
 
 			Count++;
@@ -282,7 +295,8 @@ namespace LinkedList.ArrayList
 				SetStartOprions(data); return;
 			}
 
-			HeadPrev();
+			//HeadPrev();
+			headIndex = pathes[headIndex].Prev;
 			array[headIndex] = data;
 
 			Count++;
@@ -292,7 +306,8 @@ namespace LinkedList.ArrayList
 			if (IsEmpty) return;
 			if (Count == 1) { Clear(); return; }
 
-			HeadNext();
+			//HeadNext();
+			headIndex = pathes[headIndex].Next;
 			Count--;
 		}
 		public void RemoveLast()
@@ -300,7 +315,8 @@ namespace LinkedList.ArrayList
 			if (IsEmpty) return;
 			if (Count == 1) { Clear(); return; }
 
-			TailPrev();
+			//TailPrev();
+			tailIndex = pathes[tailIndex].Prev;
 			Count--;
 		}
 		public void Remove(T data)
@@ -333,16 +349,21 @@ namespace LinkedList.ArrayList
 		}
 		public void RemoveAt(int index)
 		{
-			if (headIndex == index)
+			if (!IsValidIndex(index)) throw new IndexOutOfRangeException();
+			
+			if (0 == index)
 			{
 				RemoveFirst();
 				return;
 			}
-			if (tailIndex == index)
+			
+			if (Count - 1 == index)
 			{
 				RemoveLast();
 				return;
 			}
+
+			index = MathIndex(index);
 			if (IsFormated) CutRoad(index);
 			else
 			{
