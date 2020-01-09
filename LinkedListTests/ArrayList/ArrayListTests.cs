@@ -213,7 +213,7 @@ namespace LinkedList.ArrayList.Tests
 
 			for (int i = 0; i < arr.Size; i++)
 			{
-				arr[i] = i;
+				arr.Append(i);
 			}
 			Assert.AreEqual(10, arr.Count);
 			Assert.IsFalse(arr.IsEmpty);
@@ -278,6 +278,15 @@ namespace LinkedList.ArrayList.Tests
 			Assert.AreEqual(9, arr[8]);
 			//0,1,2,4,5,6,8,9
 			arr.RemoveAt(6);
+			Assert.AreEqual(8, arr.Count);
+			Assert.AreEqual(0, arr[0]);
+			Assert.AreEqual(1, arr[1]);
+			Assert.AreEqual(2, arr[2]);
+			Assert.AreEqual(4, arr[3]);
+			Assert.AreEqual(5, arr[4]);
+			Assert.AreEqual(6, arr[5]);
+			Assert.AreEqual(8, arr[6]);
+			Assert.AreEqual(9, arr[7]);
 		}
 		[TestMethod()]
 		public void RemoveTest3()
@@ -285,29 +294,46 @@ namespace LinkedList.ArrayList.Tests
 			var arr = ctor();
 			Assert.IsTrue(arr.IsEmpty);
 			Assert.AreEqual(10, arr.Size);
-			for (int i = 0; i < arr.Size; i++)
-			{
-				arr[i] = i;
-			}
+			arr.Clear();
+
+			arr.Append(3);
+			arr.Append(4);
+			arr.Append(5);
+			arr.Append(6);
+			arr.Append(7);
+
+			arr.Prepend(2);
+			arr.Prepend(1);
+			arr.Prepend(0);
+
+			arr.Append(8);
+			arr.Append(9);
 			//0,1,2,3,4,5,6,7,8,9
 			Assert.AreEqual(10, arr.Count);
 			Assert.IsFalse(arr.IsEmpty);
 			//0,1,2,4,5,6,7,8,9
 			arr.Remove(3);
-			//0,1,2,4,5,7,8,9
-			arr.Remove(6);
-			Assert.AreEqual(8, arr.Count);
+			Assert.AreEqual(9, arr.Count);
+			Assert.AreEqual(0, arr[0]);
+			Assert.AreEqual(1, arr[1]);
 			Assert.AreEqual(2, arr[2]);
 			Assert.AreEqual(4, arr[3]);
 			Assert.AreEqual(5, arr[4]);
-			Assert.AreEqual(7, arr[5]);
+			Assert.AreEqual(6, arr[5]);
+			Assert.AreEqual(7, arr[6]);
+			Assert.AreEqual(8, arr[7]);
+			Assert.AreEqual(9, arr[8]);
+			//0,1,2,4,5,6,8,9
+			arr.Remove(7);
+			Assert.AreEqual(8, arr.Count);
+			Assert.AreEqual(0, arr[0]);
+			Assert.AreEqual(1, arr[1]);
+			Assert.AreEqual(2, arr[2]);
+			Assert.AreEqual(4, arr[3]);
+			Assert.AreEqual(5, arr[4]);
+			Assert.AreEqual(6, arr[5]);
 			Assert.AreEqual(8, arr[6]);
 			Assert.AreEqual(9, arr[7]);
-
-
-			//arr.Prepend(-99);
-
-
 		}
 	}
 }

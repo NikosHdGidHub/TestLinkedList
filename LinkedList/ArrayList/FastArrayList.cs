@@ -1,46 +1,23 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Collections;
 
 namespace LinkedList.ArrayList
 {
-	
-	internal struct IndexingPathing
-	{
-		public int Prev;
-		public int Next;
-	}
-	internal static class ExtendClass
-	{
-		public static void Connect(this IndexingPathing[] pathes, int indexLeft, int indexRight)
-		{
-			pathes[indexLeft].Next = indexRight;
-			pathes[indexRight].Prev = indexLeft;
-		}
-		public static void Connect2(this IndexingPathing[] pathes, int indexLeft, int indexTarget, int indexRight)
-		{
-			pathes.Connect(indexLeft, indexTarget);
-			pathes.Connect(indexTarget, indexRight);
-		}
-		public static void PasteBefore(this IndexingPathing[] pathes, int indexTarget, int indexRight)
-		{
-			var indexLeft = pathes[indexRight].Prev;
-			pathes.Connect2(indexLeft, indexTarget, indexRight);
-		}
-		public static void Cut(this IndexingPathing[] pathes, int indexTarget)
-		{
-			var indexRight = pathes[indexTarget].Next;
-			var indexLeft = pathes[indexTarget].Prev;
-			pathes.Connect(indexLeft, indexRight);
-		}
-	}
+
 	public class FastArrayList<T> : IEnumerable<T>
 	{
-		
 
-		private T[] array;
-		private readonly IndexingPathing[] pathes;
+
+		private readonly T[] array;
+		private readonly int[] hashArray;
+		/// <summary>
+		/// хранит позицию в головы массива в hashArray
+		/// </summary>
 		private int headIndex = -1;
+		/// <summary>
+		/// хранит позицию в хвоста массива в hashArray
+		/// </summary>
 		private int tailIndex = -1;
 
 		/// <summary>
@@ -49,6 +26,29 @@ namespace LinkedList.ArrayList
 		private int MaxIndex => Size - 1;
 
 		#region Private Methods
+		
+		private int GetNextIndex(int tIndex)
+		{			
+			if (tIndex < MaxIndex)
+			{
+				return tIndex + 1;
+			}
+			if (tIndex == MaxIndex)
+			{
+				return 0;
+			}
+			throw new MemberAccessException();
+		}
+		private int GetPrevIndex(int tIndex)
+		{
+			if (tIndex > 0)
+				return tIndex - 1;
+
+			if (tIndex == 0)
+				return MaxIndex;
+
+			throw new MemberAccessException();
+		}
 
 		private bool IsValidIndex(int index)
 		{
@@ -70,73 +70,46 @@ namespace LinkedList.ArrayList
 			Count = 1;
 		}
 
-		private void FormatingRoadArray(int i)
-		{
-			if (i == 0)
-			{
-				pathes[i].Prev = MaxIndex;
-			}
-			else
-			{
-				pathes[i].Prev = i - 1;
-			}
-			if (i == MaxIndex)
-			{
-				pathes[i].Next = 0;
-			}
-			else
-				pathes[i].Next = i + 1;
-		}
-		private void FormatingArray()
-		{
-			var newArray = new T[Size];
-			var headI = headIndex;
-			for (int i = 0; i < Size; i++)
-			{
-				if (i < Count)
-				{
-					newArray[i] = array[headI];
-					headI = pathes[headI].Next;
-				}
-				FormatingRoadArray(i);
-			}
-
-			array = newArray;
-			
-			
-			IsFormated = true;
-			headIndex = 0;
-			tailIndex = Count - 1;
-		}
 
 		private int MathIndex(int index)
 		{
-			var result = index + headIndex;
-			if (result > MaxIndex)
-				result -= Size;
-			return result;
+			return (index + headIndex) % Size;
 		}
-
-		private void CutRoad(int indexRoad)
+		private void Cut(int indexS)
 		{
-			if (indexRoad == headIndex || indexRoad == tailIndex)
-				throw new ArithmeticException();
-
-			pathes.Cut(indexRoad);
-			pathes.PasteBefore(indexRoad, headIndex);
-			IsFormated = false;
+			var index = MathIndex(indexS);
+			if (indexS > Count / 2) //+
+			{
+				hashArray[tailIndex] = index;
+				for (int i = index; i != tailIndex; )
+				{
+					hashArray[i] = GetNextIndex(hashArray[i]);
+					i = GetNextIndex(i);
+				}
+				tailIndex = GetPrevIndex(tailIndex);
+			}
+			else//-
+			{
+				hashArray[headIndex] = index;
+				for (int i = index; i != headIndex; )
+				{
+					hashArray[i] = GetPrevIndex(hashArray[i]);
+					i = GetPrevIndex(i);
+				}
+				headIndex = GetNextIndex(headIndex);
+			}
 		}
+
 		#endregion
 
 		#region Public Property
 
-		public bool IsFormated { get; private set; }
 		public T First
 		{
 			get
 			{
 				if (!IsEmpty)
-					return array[headIndex];
+					return array[hashArray[headIndex]];
 				throw new NullReferenceException("Массив пустой");
 			}
 		}
@@ -145,7 +118,7 @@ namespace LinkedList.ArrayList
 			get
 			{
 				if (!IsEmpty)
-					return array[tailIndex];
+					return array[hashArray[tailIndex]];
 				throw new NullReferenceException("Массив пустой");
 			}
 		}
@@ -157,14 +130,6 @@ namespace LinkedList.ArrayList
 		public bool IsEmpty
 		{
 			get => Count == 0;
-			//{
-
-			//	//if (headIndex == -1 && tailIndex == -1 && Count == 0)
-			//	//	return true;
-			//	//if (headIndex > -1 && tailIndex > -1 && Count > 0)
-			//	//	return false;
-			//	//throw new MemberAccessException();
-			//}
 		}
 		public bool IsAvailableWrite
 		{
@@ -182,24 +147,16 @@ namespace LinkedList.ArrayList
 		{
 			get
 			{
-				if (!IsFormated) FormatingArray();
-				return array[MathIndex(index)];
+				return array[hashArray[MathIndex(index)]];
 			}
 			set
 			{
-				if (!IsFormated) FormatingArray();
-				var mathIndex = MathIndex(index);
-				if (IsEmpty || mathIndex == Count)
-				{
-					Append(value);
-					return;
-				}
-				if (mathIndex < Count)
-				{
-					array[mathIndex] = value;
-					return;
-				}
-				throw new IndexOutOfRangeException();
+				if (!IsValidIndex(index))
+					throw new IndexOutOfRangeException();
+
+
+				array[hashArray[MathIndex(index)]] = value;
+				return;
 			}
 		}
 
@@ -207,12 +164,11 @@ namespace LinkedList.ArrayList
 		{
 			array = new T[size];
 
-			pathes = new IndexingPathing[Size];
+			hashArray = new int[Size];
 			for (int i = 0; i < Size; i++)
 			{
-				FormatingRoadArray(i);
+				hashArray[i] = i;
 			}
-			IsFormated = true;
 		}
 
 		#region Public Methods
@@ -225,8 +181,7 @@ namespace LinkedList.ArrayList
 				SetStartOprions(data); return;
 			}
 
-			//TailNext();
-			tailIndex = pathes[tailIndex].Next;
+			tailIndex = GetNextIndex(tailIndex);
 
 			array[tailIndex] = data;
 
@@ -241,7 +196,7 @@ namespace LinkedList.ArrayList
 			}
 
 			//HeadPrev();
-			headIndex = pathes[headIndex].Prev;
+			headIndex = GetPrevIndex(headIndex);
 			array[headIndex] = data;
 
 			Count++;
@@ -252,7 +207,7 @@ namespace LinkedList.ArrayList
 			if (Count == 1) { Clear(); return; }
 
 			//HeadNext();
-			headIndex = pathes[headIndex].Next;
+			headIndex = GetNextIndex(headIndex);
 			Count--;
 		}
 		public void RemoveLast()
@@ -261,7 +216,7 @@ namespace LinkedList.ArrayList
 			if (Count == 1) { Clear(); return; }
 
 			//TailPrev();
-			tailIndex = pathes[tailIndex].Prev;
+			tailIndex = GetPrevIndex(tailIndex);
 			Count--;
 		}
 		public void Remove(T data)
@@ -276,20 +231,18 @@ namespace LinkedList.ArrayList
 				RemoveLast();
 				return;
 			}
-
-			var searchIndex = headIndex;
+			var SearchIndex = 0;
 			var flag = false;
-			ForEach((item, index) =>
+			ForEach((item,index)=>
 			{
 				if (item.Equals(data))
 				{
 					flag = true;
-					searchIndex = index;
+					SearchIndex = index;
 				}
 				return flag;
 			});
-
-			if (flag) CutRoad(searchIndex);
+			Cut(SearchIndex);
 			Count--;
 		}
 		public void RemoveAt(int index)
@@ -308,17 +261,7 @@ namespace LinkedList.ArrayList
 				return;
 			}
 
-			index = MathIndex(index);
-			if (IsFormated) CutRoad(index);
-			else
-			{
-				var headI = headIndex;
-				for (int i = 0; i < index; i++)
-				{
-					headI = pathes[headI].Next;
-				}
-				CutRoad(headI);
-			}
+			Cut(index);
 			Count--;
 		}
 		public void Clear()
@@ -341,21 +284,21 @@ namespace LinkedList.ArrayList
 		}
 
 		public void ForEach(Func<T, int, bool> action)
-		{
-			var headI = headIndex;
+		{			
+			var index = headIndex;
 			for (int i = 0; i < Count; i++)
 			{
-				if (action(array[headI], headI)) return;
-				headI = pathes[headI].Next;
+				if (action(array[hashArray[index]], i)) return;
+				index = GetNextIndex(index);
 			}
 		}
 		private IEnumerable<T> BruteForse()
 		{
-			var headI = headIndex;
+			var index = headIndex;
 			for (int i = 0; i < Count; i++)
 			{
-				yield return array[headI];
-				headI = pathes[headI].Next;
+				yield return array[hashArray[index]];
+				index = GetNextIndex(index);
 			}
 		}
 

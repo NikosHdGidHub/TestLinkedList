@@ -6,7 +6,6 @@ namespace LinkedList.ArrayList
 {
 	public class SimpleArrayList<T> : IEnumerable<T>
 	{
-		private HashSet<T> a;
 		private readonly T[] array;
 		private int headIndex = -1;
 		private int tailIndex = -1;
