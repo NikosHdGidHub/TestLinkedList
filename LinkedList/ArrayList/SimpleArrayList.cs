@@ -6,12 +6,15 @@ namespace LinkedList.ArrayList
 {
 	public class SimpleArrayList<T> : IEnumerable<T>
 	{
+		private HashSet<T> a;
 		private readonly T[] array;
 		private int headIndex = -1;
 		private int tailIndex = -1;
 		private int LastIndex => Size - 1;
 		private void TailNext()
 		{
+
+
 			if (IsEmpty) throw new ArithmeticException("Массив не должен быть пустым, выполняя этот метод");
 			if (!IsAvailableWrite) throw new ArithmeticException("Массив не должен быть переполненным, выполняя этот метод");
 

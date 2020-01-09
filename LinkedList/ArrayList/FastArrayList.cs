@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace LinkedList.ArrayList
 {
+	
 	internal struct IndexingPathing
 	{
 		public int Prev;
@@ -35,14 +36,20 @@ namespace LinkedList.ArrayList
 	}
 	public class FastArrayList<T> : IEnumerable<T>
 	{
+		
+
 		private T[] array;
 		private readonly IndexingPathing[] pathes;
 		private int headIndex = -1;
 		private int tailIndex = -1;
+
 		/// <summary>
 		/// Length - 1
 		/// </summary>
 		private int MaxIndex => Size - 1;
+
+		#region Private Methods
+
 		private bool IsValidIndex(int index)
 		{
 			if (index >= 0 && index < Count)
@@ -51,70 +58,16 @@ namespace LinkedList.ArrayList
 			}
 			return false;
 		}
-		private void TailNext()
-		{
-			if (IsEmpty) throw new ArithmeticException("Массив не должен быть пустым, выполняя этот метод");
-			if (!IsAvailableWrite) throw new ArithmeticException("Массив не должен быть переполненным, выполняя этот метод");
 
-			if (tailIndex < Size)
-			{
-				tailIndex = pathes[tailIndex].Next;
-				return;
-			}
-			throw new MemberAccessException();
-		}
-		private void TailPrev()
-		{
-			if (IsEmpty) throw new ArithmeticException("Массив не должен быть пустым, выполняя этот метод");
-			if (Count == 1) throw new ArithmeticException("Массив не должен иметь 1 элемент, выполняя этот метод");
-
-			if (tailIndex > -1)
-			{
-				tailIndex = pathes[tailIndex].Prev;
-				return;
-			}
-			throw new MemberAccessException();
-		}
-		private void HeadNext()
-		{
-			if (IsEmpty) throw new ArithmeticException("Массив не должен быть пустым, выполняя этот метод");
-			if (Count == 1) throw new ArithmeticException("Массив не должен иметь 1 элемент, выполняя этот метод");
-
-			if (headIndex < Size)
-			{
-				headIndex = pathes[headIndex].Next;
-				return;
-			}
-			throw new MemberAccessException();
-		}
-		private void HeadPrev()
-		{
-			if (IsEmpty) throw new ArithmeticException("Массив не должен быть пустым, выполняя этот метод");
-			if (!IsAvailableWrite) throw new ArithmeticException("Массив не должен быть переполненным, выполняя этот метод");
-
-			if (headIndex > -1)
-			{
-				headIndex = pathes[headIndex].Prev;
-				return;
-			}
-			throw new MemberAccessException();
-		}
-		/// <summary>
-		/// Служит для настройки списка под 1 элемент
-		/// </summary>
-		private void SetStartOprions()
-		{
-			headIndex = 0;
-			tailIndex = 0;
-			Count = 1;
-		}
 		/// <summary>
 		/// Служит для настройки списка под 1 элемент
 		/// </summary>
 		private void SetStartOprions(T data)
 		{
 			array[0] = data;
-			SetStartOprions();
+			headIndex = 0;
+			tailIndex = 0;
+			Count = 1;
 		}
 
 		private void FormatingRoadArray(int i)
@@ -147,7 +100,10 @@ namespace LinkedList.ArrayList
 				}
 				FormatingRoadArray(i);
 			}
+
 			array = newArray;
+			
+			
 			IsFormated = true;
 			headIndex = 0;
 			tailIndex = Count - 1;
@@ -160,15 +116,6 @@ namespace LinkedList.ArrayList
 				result -= Size;
 			return result;
 		}
-		private int FindIndex(int index)
-		{
-			var headI = headIndex;
-			for (int i = 0; i < index; i++)
-			{
-				headI = pathes[headI].Next;
-			}
-			return headI;
-		}
 
 		private void CutRoad(int indexRoad)
 		{
@@ -179,41 +126,10 @@ namespace LinkedList.ArrayList
 			pathes.PasteBefore(indexRoad, headIndex);
 			IsFormated = false;
 		}
+		#endregion
 
-		private IEnumerable<T> BruteForse()
-		{
-			var headI = headIndex;
-			for (int i = 0; i < Count; i++)
-			{
-				yield return array[headI];
-				headI = pathes[headI].Next;
-			}
-		}
+		#region Public Property
 
-		public T this[int index]
-		{
-			get
-			{
-				if (!IsFormated) FormatingArray();
-				return array[MathIndex(index)];
-			}
-			set
-			{
-				if (!IsFormated) FormatingArray();
-				var mathIndex = MathIndex(index);
-				if (IsEmpty || mathIndex == Count)
-				{
-					Append(value);
-					return;
-				}
-				if (mathIndex < Count)
-				{
-					array[mathIndex] = value;
-					return;
-				}
-				throw new IndexOutOfRangeException();
-			}
-		}
 		public bool IsFormated { get; private set; }
 		public T First
 		{
@@ -260,6 +176,32 @@ namespace LinkedList.ArrayList
 			}
 		}
 
+		#endregion
+
+		public T this[int index]
+		{
+			get
+			{
+				if (!IsFormated) FormatingArray();
+				return array[MathIndex(index)];
+			}
+			set
+			{
+				if (!IsFormated) FormatingArray();
+				var mathIndex = MathIndex(index);
+				if (IsEmpty || mathIndex == Count)
+				{
+					Append(value);
+					return;
+				}
+				if (mathIndex < Count)
+				{
+					array[mathIndex] = value;
+					return;
+				}
+				throw new IndexOutOfRangeException();
+			}
+		}
 
 		public FastArrayList(int size)
 		{
@@ -272,6 +214,9 @@ namespace LinkedList.ArrayList
 			}
 			IsFormated = true;
 		}
+
+		#region Public Methods
+
 		public void Append(T data)
 		{
 			if (!IsAvailableWrite) return;
@@ -332,31 +277,31 @@ namespace LinkedList.ArrayList
 				return;
 			}
 
-			var headI = headIndex;
+			var searchIndex = headIndex;
 			var flag = false;
-			for (int i = 0; i < Count; i++)
+			ForEach((item, index) =>
 			{
-				if (array[headI].Equals(data))
+				if (item.Equals(data))
 				{
 					flag = true;
-					break;
+					searchIndex = index;
 				}
-				headI = pathes[headI].Next;
-			}
+				return flag;
+			});
 
-			if (flag) CutRoad(headI);
+			if (flag) CutRoad(searchIndex);
 			Count--;
 		}
 		public void RemoveAt(int index)
 		{
 			if (!IsValidIndex(index)) throw new IndexOutOfRangeException();
-			
+
 			if (0 == index)
 			{
 				RemoveFirst();
 				return;
 			}
-			
+
 			if (Count - 1 == index)
 			{
 				RemoveLast();
@@ -383,6 +328,8 @@ namespace LinkedList.ArrayList
 			Count = 0;
 		}
 
+		#endregion
+
 		public IEnumerator<T> GetEnumerator()
 		{
 			return BruteForse().GetEnumerator();
@@ -393,6 +340,24 @@ namespace LinkedList.ArrayList
 			return BruteForse().GetEnumerator();
 		}
 
+		public void ForEach(Func<T, int, bool> action)
+		{
+			var headI = headIndex;
+			for (int i = 0; i < Count; i++)
+			{
+				if (action(array[headI], headI)) return;
+				headI = pathes[headI].Next;
+			}
+		}
+		private IEnumerable<T> BruteForse()
+		{
+			var headI = headIndex;
+			for (int i = 0; i < Count; i++)
+			{
+				yield return array[headI];
+				headI = pathes[headI].Next;
+			}
+		}
 
 	}
 }
