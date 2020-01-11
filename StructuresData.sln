@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LinkedListTests", "LinkedLi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LinkedList", "LinkedList\LinkedList.csproj", "{5DD33F70-1988-4FF6-BE99-695502B851FD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapLib", "MapLib\MapLib.csproj", "{D9867C0A-2F5B-4553-888E-667016296EBB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapLibTests", "MapLibTests\MapLibTests.csproj", "{0DD9E059-59CC-4A3C-983D-082275407D72}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{5DD33F70-1988-4FF6-BE99-695502B851FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DD33F70-1988-4FF6-BE99-695502B851FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5DD33F70-1988-4FF6-BE99-695502B851FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9867C0A-2F5B-4553-888E-667016296EBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9867C0A-2F5B-4553-888E-667016296EBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9867C0A-2F5B-4553-888E-667016296EBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9867C0A-2F5B-4553-888E-667016296EBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DD9E059-59CC-4A3C-983D-082275407D72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DD9E059-59CC-4A3C-983D-082275407D72}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DD9E059-59CC-4A3C-983D-082275407D72}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DD9E059-59CC-4A3C-983D-082275407D72}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

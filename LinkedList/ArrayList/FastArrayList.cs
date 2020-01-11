@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace LinkedList.ArrayList
 {
@@ -26,7 +28,35 @@ namespace LinkedList.ArrayList
 		private int MaxIndex => Size - 1;
 
 		#region Private Methods
-		
+		private int FindIndex = -1;
+		private async Task FindRecAsync(T data, int start, int end)
+		{
+			if (FindIndex != -1) return;
+			await Task.Run(()=>FindRec(data, start, end));
+			return;
+		}
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="array"></param>
+		/// <param name="start"></param>
+		/// <param name="end">не включительно</param>
+		/// <param name="data"></param>
+		private void FindRec(T data, int start, int end)
+		{
+			var count = end - start;			
+			
+			for (int i = start; i < end; i++)
+			{
+				if (FindIndex != -1) break;
+				if (this[i].Equals(data))
+				{
+					//Console.WriteLine("Find!");
+					FindIndex = i;
+					break;
+				}
+			}			
+		}
 		private int GetNextIndex(int tIndex)
 		{			
 			if (tIndex < MaxIndex)
@@ -74,6 +104,13 @@ namespace LinkedList.ArrayList
 		private int MathIndex(int index)
 		{
 			return (index + headIndex) % Size;
+		}
+		private int MathIndex2(int index)
+		{
+			index += headIndex;
+			if (index > MaxIndex)
+				index -= Size;
+			return index;
 		}
 		private void Cut(int indexS)
 		{
@@ -231,9 +268,11 @@ namespace LinkedList.ArrayList
 				RemoveLast();
 				return;
 			}
+
+
 			var SearchIndex = 0;
 			var flag = false;
-			ForEach((item,index)=>
+			ForEach((item, index) =>
 			{
 				if (item.Equals(data))
 				{
@@ -242,8 +281,12 @@ namespace LinkedList.ArrayList
 				}
 				return flag;
 			});
-			Cut(SearchIndex);
-			Count--;
+			if (flag)
+			{
+				Cut(SearchIndex);
+				Count--;
+			}
+
 		}
 		public void RemoveAt(int index)
 		{
