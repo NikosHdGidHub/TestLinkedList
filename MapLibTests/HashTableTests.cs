@@ -48,21 +48,24 @@ namespace MapLib.Tests
 		[TestMethod()]
 		public void UpSizeTest()
 		{
-			var asss = new HashTable<string, string>(10);
-
-			for (int i = 0; i < 1500; i++)
+			var asss = new HashTable<string, string>(1);
+			GC.Collect();
+			for (int i = 0; i < 1500000; i++)
 			{
 				asss.Add("Key " + i, "Value " + i);
 			}
 			var stats = asss.GetStatsCollisions();
 			var max = stats.MaxCollisions;
 			var dict = stats.Stats;
-			dict.TryGetValue(0, out CollisionStats collisionStats_0);
-			var PERCENT = collisionStats_0.Percent;
-			for (int i = 0; i < 1500; i++)
+			dict.TryGetValue(0, out Stats collisionStats_0);
+			dict.TryGetValue(1, out Stats collisionStats_1);
+			var PERCENT0 = Math.Round(collisionStats_0.Percent,2);
+			var PERCENT1 = Math.Round(collisionStats_1.Percent,2);
+			for (int i = 0; i < 1561; i++)
 			{
 				Assert.AreEqual("Value " + i, asss["Key " + i]);
 			}
+			
 		}
 		[TestMethod()]
 		public void GetSetTest()

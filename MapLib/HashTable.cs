@@ -1,33 +1,50 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+//using System.Linq;
 
 namespace MapLib
 {
-    public class CollisionStats
+    public class Stats
     {
         public int CollisionsCount { get; set; }
         public int FoundTimes { get; set; } = 1;
         public double Percent { get; set; }
     }
-    public class CollisionsDataStats
+    public class CollisionsStats
     {
-        public int MaxCollisions { get; private set; }
+        /// <summary>
+        /// Максимальное количество коллизий на один хеш
+        /// </summary>
+        public int MaxCollisions { get; }
+        /// <summary>
+        /// Выделено памяти
+        /// </summary>
+        public int AllocatedMemory { get; private set; }
+        /// <summary>
+        /// Занято памяти
+        /// </summary>
+        public int MemotyOccupied { get; private set; }
+        public double PercentMemory { get; private set; }
 
-        public Dictionary<int, CollisionStats> Stats { get; private set; }
-        public CollisionsDataStats(int max, Dictionary<int, CollisionStats> dict)
+        public Dictionary<int, Stats> Stats { get; private set; }
+        public CollisionsStats(int max, Dictionary<int, Stats> dict, int locatedMem, int occupied)
         {
             Stats = dict;
             MaxCollisions = max;
+            AllocatedMemory = locatedMem;
+            MemotyOccupied = occupied;
+            PercentMemory = Math.Round(occupied / (double)locatedMem * 100.0,2);
         }
     }
 
-    public class HashTable<Tkey, TValue>
+    public class HashTable<Tkey, TValue> : IEnumerable<KeyValuePair<Tkey, TValue>>
     {
         #region Private Fields
-        private int size = 100;
+        private int size = 1;
         private Item<Tkey, TValue>[] items;
-        private readonly List<Tkey> keys;
+        private readonly HashSet<Tkey> keys;
         #endregion
         #region Private Methods
         private int GetHash(Tkey key)
@@ -48,7 +65,10 @@ namespace MapLib
         }
         private void UpSizeHash()
         {
-            size = (int)(size * 1.59) + keys.Count;
+            //size = (int)(size * 2);
+            //size = (int)(size * 2 - size * (Count / (double)keys.Count));
+            size = size + Count;
+            //size = (int)(size + size * (Count / (double)keys.Count) );
             var oldArrayItems = items;
             items = new Item<Tkey, TValue>[size];
             keys.Clear();
@@ -84,20 +104,21 @@ namespace MapLib
             items = newHash;
         }
         #endregion
-        public HashTable() : this(100) { }
+        public HashTable() : this(1) { }
         public HashTable(int size)
         {
             if (size < 1) throw new Exception("Размер должен быть больше 0: size = " + size);
 
             this.size = size;
             items = new Item<Tkey, TValue>[size];
-            keys = new List<Tkey>();
+            keys = new HashSet<Tkey>(size);            
         }
         public TValue this[Tkey key]
         {
             get
             {
-                return GetValue(key);
+                TryGetValue(key, out TValue val);
+                return val;
             }
             set
             {
@@ -109,10 +130,10 @@ namespace MapLib
 
         #endregion
         #region Public Methods
-        public CollisionsDataStats GetStatsCollisions()
+        public CollisionsStats GetStatsCollisions()
         {
             var max = 0;
-            var dict = new Dictionary<int, CollisionStats>();
+            var dict = new Dictionary<int, Stats>();
 
             foreach (var item in items)
             {
@@ -122,26 +143,26 @@ namespace MapLib
                 if (count > max)
                     max = count;
 
-                if (dict.TryGetValue(count, out CollisionStats stats))
+                if (dict.TryGetValue(count, out Stats stats))
                 {
                     stats.FoundTimes++;
                 }
                 else
                 {
-                    dict.Add(count, new CollisionStats() { CollisionsCount = count });
+                    dict.Add(count, new Stats() { CollisionsCount = count });
                 }
             }
             foreach (var item in dict)
             {
-                dict.TryGetValue(item.Key, out CollisionStats stats);
+                dict.TryGetValue(item.Key, out Stats stats);
                 stats.Percent = stats.FoundTimes / (double)Count * 100.0;
             }
-            return new CollisionsDataStats(max, dict);
+            return new CollisionsStats(max, dict, size, Count);
         }
         public void Add(Tkey key, TValue value)
         {
-            if (Count >= size) UpSizeHash();
-
+            if (keys.Count >= size) UpSizeHash();
+            //if ((Count / (double)size) > 0.8) UpSizeHash();
             if (keys.Contains(key)) throw new Exception($"Ключ @{key}@ уже существует");
 
             keys.Add(key);
@@ -192,16 +213,18 @@ namespace MapLib
                 }
             }
         }
-        public TValue GetValue(Tkey key)
+        public bool TryGetValue(Tkey key, out TValue value)
         {
-            if (!keys.Contains(key)) throw new Exception($"Ключа @{key}@ не существует");
+            value = default;
+            if (!keys.Contains(key)) return false;
 
             var hash = GetHash(key);
             var data = items[hash];
             var collisionsCount = data.Collisions.Count;
             if (data.Key.Equals(key))
             {
-                return data.Value;
+                value = data.Value;
+                return true;
             }
             else
             {
@@ -209,7 +232,8 @@ namespace MapLib
                 {
                     if (data.Collisions[i].Key.Equals(key))
                     {
-                        return data.Collisions[i].Value;
+                        value = data.Collisions[i].Value;
+                        return true;
                     }
                 }
             }
@@ -236,6 +260,20 @@ namespace MapLib
                     }
                 }
             }
+        }
+
+        public IEnumerator<KeyValuePair<Tkey, TValue>> GetEnumerator()
+        {
+            foreach (var key in keys)
+            {
+                var value = this[key];
+                yield return new KeyValuePair<Tkey, TValue>(key, value);
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
         #endregion
 
