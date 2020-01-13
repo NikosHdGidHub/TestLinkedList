@@ -40,16 +40,16 @@ namespace TreeLib
 				var keyChar = item.Key;
 				var previusStrChild = previusStr + keyChar;
 				var childSubWords = child.GetSubWords(previusStrChild);
+				//если он был концом слова
+				if (child.IsEndWord)
+				{
+					result.Add(previusStrChild);
+				}
 				//если ребенок был крайним
 				if (childSubWords == null)
 				{
-					//если он был концом слова
-					if (child.IsEndWord)
-					{
-						result.Add(previusStrChild);
-						continue;
-					}
 					//здесь можно удалять элемент при желании
+					continue;
 				}
 				//если ребенок не был крайним, то он возвращает множество обрывков
 				//объединяем полученные обрывки с нашим множеством
@@ -58,7 +58,31 @@ namespace TreeLib
 			return result;
 		}
 		#endregion
-		public void AddChild(string subWord, TValue data)
+		#region Internal
+		internal bool TryGetValue(string subWord , out TValue value)
+		{
+			if (string.IsNullOrWhiteSpace(subWord))
+				throw new ArgumentNullException(subWord);
+
+			value = default;
+
+			var charKey = subWord[0];
+			//проверить наличие текущего символа в детях
+			if (!Children.TryGetValue(charKey, out Node<TValue> child))
+			{
+				return false;
+			}
+			//рекуррентный вызов
+			if (subWord.Length > 1)
+			{
+				return child.TryGetValue(subWord.Substring(1), out value);
+			}
+
+			//остался последний символ -> выход из рекурсии	
+			value = child.Data;
+			return true;
+		}
+		internal void AddChild(string subWord, TValue data)
 		{
 			if (string.IsNullOrWhiteSpace(subWord)) return;
 
@@ -105,7 +129,6 @@ namespace TreeLib
 			//Если строка пустая, то начинаем поиск с этого элемента
 			return GetSubWords(prefix);
 		}
-
 		internal TValue GetValue(string subWord)
 		{
 			if (string.IsNullOrWhiteSpace(subWord))
@@ -128,7 +151,6 @@ namespace TreeLib
 
 			return child.Data;
 		}
-
 		internal void RemoveChild(string subWord)
 		{
 			if (string.IsNullOrWhiteSpace(subWord))
@@ -150,5 +172,6 @@ namespace TreeLib
 			//остался последний символ -> выход из рекурсии			
 			child.DeleteEndWord();
 		}
+		#endregion
 	}
 }

@@ -1,24 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace TreeLib
+namespace TreeLib.Trie
 {
-	public class TreeWords<T>
+	public class TrieWords<T>
 	{
 		/// <summary>
 		/// Корневой элемент
 		/// </summary>
 		private readonly Node<T> root = new Node<T>();
-		/// <summary>
-		/// Список существующих слов
-		/// </summary>
-		private readonly HashSet<string> hashKeyWords = new HashSet<string>();
+		///// <summary>
+		///// Список существующих слов
+		///// </summary>
+		//private readonly HashSet<string> hashKeyWords;
 
+		
 		#region Public
 		/// <summary>
 		/// Количество слов в дереве
 		/// </summary>
-		public int Count => hashKeyWords.Count;
+		public int Count { get; private set; }
 		/// <summary>
 		/// Добавить новое слово и данные к нему
 		/// </summary>
@@ -29,7 +30,7 @@ namespace TreeLib
 			_ = keyWord ?? throw new ArgumentNullException(nameof(keyWord));
 
 			root.AddChild(keyWord, data);
-			hashKeyWords.Add(keyWord);
+			Count++;
 		}
 		/// <summary>
 		/// Удалить слово из дерева
@@ -40,7 +41,7 @@ namespace TreeLib
 			_ = keyWord ?? throw new ArgumentNullException(nameof(keyWord));
 
 			root.RemoveChild(keyWord);
-			hashKeyWords.Remove(keyWord);
+			Count--;
 		}
 		/// <summary>
 		/// Проверяет существует ли слово в дереве
@@ -51,7 +52,7 @@ namespace TreeLib
 		{
 			_ = keyWord ?? throw new ArgumentNullException(nameof(keyWord));
 
-			return hashKeyWords.Contains(keyWord);
+			return root.TryGetValue(keyWord, out _);
 		}
 		/// <summary>
 		/// Проверяет существует ли слово в дереве, и возвращает его данные
@@ -63,11 +64,7 @@ namespace TreeLib
 		{
 			_ = keyWord ?? throw new ArgumentNullException(nameof(keyWord));
 
-			value = default;
-			if (!Contains(keyWord)) return false;
-
-			value = root.GetValue(keyWord);
-			return true;
+			return root.TryGetValue(keyWord, out value);
 		}
 		/// <summary>
 		/// Возвращает множество обрывков слов после префикса

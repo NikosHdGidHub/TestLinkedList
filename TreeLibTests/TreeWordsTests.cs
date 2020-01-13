@@ -1,5 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TreeLib;
+using TreeLib.Trie;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,9 +11,9 @@ namespace TreeLib.Tests
 	[TestClass()]
 	public class TreeWordsTests
 	{
-		private TreeWords<int> GetTree()
+		private TrieWords<int> GetTree()
 		{
-			var dict = new TreeWords<int>();
+			var dict = new TrieWords<int>();
 
 			dict.Add("apple", 1);
 			dict.Add("application", 2);
@@ -23,7 +23,7 @@ namespace TreeLib.Tests
 		[TestMethod()]
 		public void AddTest()
 		{
-			var dict = new TreeWords<int>();
+			var dict = new TrieWords<int>();
 
 			dict.Add("apple", 1);
 			dict.Add("яблоко", 2);
